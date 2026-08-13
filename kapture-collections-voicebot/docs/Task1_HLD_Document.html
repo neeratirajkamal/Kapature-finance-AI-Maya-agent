@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task 1: High-Level Design (HLD) Document — Maya Voice AI</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2d3748; max-width: 900px; margin: 40px auto; padding: 20px; }
+        h1 { color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 30px; }
+        h2 { color: #0f766e; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        th { background: #1e3a8a; color: white; padding: 10px; text-align: left; }
+        td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+        tr:nth-child(even) { background: #f8fafc; }
+        .badge { background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .box { background: #f0fdf4; border-left: 4px solid #10b981; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="border: none; margin-bottom: 4px;">Kapture Finance — Voice AI Collections Agent ("Maya")</h1>
+        <h3 style="color: #4b5563; font-weight: normal; margin-top: 0;">Task 1: High-Level Design (HLD) Document & Architecture Specification</h3>
+    </div>
+    
+    <div class="box">
+        <strong>System Target Latency:</strong> &lt; 1.2s voice-to-voice round-trip &bull; 
+        <strong>Compliance:</strong> RBI Fair Practice Code & Zero-Debt 2FA Gate
+    </div>
+
+    <h1>1. Executive Summary & Goals</h1>
+    <p>The Voice AI Collections Agent ("Maya") is designed for Kapture Finance to autonomously execute high-volume outbound loan collection calls politely, compliantly, and efficiently.</p>
+
+    <h1>2. System Pipeline Architecture & Latency Budget</h1>
+    <p>Audio flows over PSTN/WebRTC via Vapi Orchestrator into Deepgram STT -> OpenAI GPT-4o LLM -> Express Webhook Server -> ElevenLabs TTS.</p>
+    
+    <table>
+        <thead>
+            <tr><th>Hop / Component</th><th>Technology</th><th>Target Latency</th><th>Optimization</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Telephony Gateway</td><td>WebRTC / SIP Gateway</td><td>~150 ms</td><td>Direct SIP routing</td></tr>
+            <tr><td>STT Engine</td><td>Deepgram Nova-2</td><td>~180 ms</td><td>400ms endpointing</td></tr>
+            <tr><td>Orchestrator</td><td>Vapi.ai Engine</td><td>~80 ms</td><td>Concurrent processing</td></tr>
+            <tr><td>LLM Inference</td><td>OpenAI GPT-4o</td><td>~350 ms</td><td>Stream first token</td></tr>
+            <tr><td>Webhook Execution</td><td>Node.js Express</td><td>~120 ms</td><td>Lightweight JSON</td></tr>
+            <tr><td>TTS Synthesis</td><td>ElevenLabs / Cartesia</td><td>~220 ms</td><td>WebSocket audio streaming</td></tr>
+            <tr><td><strong>Total Round-Trip</strong></td><td><strong>End-to-End Voice</strong></td><td><strong>&lt; 1200 ms</strong></td><td><strong>Sub-second target</strong></td></tr>
+        </tbody>
+    </table>
+
+    <h1>3. Deterministic State Machine</h1>
+    <ul>
+        <li><strong>State 0 (Greeting):</strong> Caller greeting & identity check without debt disclosure.</li>
+        <li><strong>State 1 (Identity Auth):</strong> Prompts 4-digit code (PAN/birth year) and executes <code>verify_customer</code>.</li>
+        <li><strong>State 2 (Negotiation):</strong> Reveals ₹8,499 overdue EMI & 12 DPD ONLY after 2FA auth succeeds.</li>
+        <li><strong>State 3 (Action Execution):</strong> Triggers <code>log_promise_to_pay</code>, <code>send_payment_link</code>, or <code>mark_disposition</code>.</li>
+        <li><strong>State 4 (Close):</strong> Enforces call wrap-up confirmation and terminates SIP session.</li>
+    </ul>
+
+    <h1>4. RBI Compliance & Edge Cases Matrix</h1>
+    <ul>
+        <li><strong>Calling Hours:</strong> Restricted to 08:00 AM – 07:00 PM local time.</li>
+        <li><strong>Already Paid:</strong> Logs <code>ALREADY_PAID</code>, advises 24-48h processing time.</li>
+        <li><strong>Do Not Call:</strong> Instant opt-out execution, logs <code>DO_NOT_CALL</code>.</li>
+        <li><strong>Hardship / Dispute:</strong> Escalates call to senior human supervisor.</li>
+    </ul>
+</body>
+</html>

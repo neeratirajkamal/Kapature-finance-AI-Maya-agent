@@ -1,0 +1,127 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "verify_customer",
+      "description": "Verifies customer identity against financial records using last 4 digits of PAN or birth year BEFORE revealing overdue loan or debt details.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "The customer's unique account ID, e.g. ACC-88392"
+          },
+          "verification_code": {
+            "type": "string",
+            "description": "The 4-digit verification code or birth year provided by the caller, e.g., '1234' or '1995'"
+          }
+        },
+        "required": ["account_id", "verification_code"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "log_promise_to_pay",
+      "description": "Logs the agreed promise-to-pay (PTP) date and amount committed by the customer.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "The customer's unique account ID, e.g. ACC-88392"
+          },
+          "ptp_date": {
+            "type": "string",
+            "description": "The ISO format date or descriptive date agreed upon for payment, e.g. '2026-08-14'"
+          },
+          "amount": {
+            "type": "number",
+            "description": "The amount in INR the customer committed to pay, e.g., 8499"
+          }
+        },
+        "required": ["account_id", "ptp_date", "amount"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "send_payment_link",
+      "description": "Triggers an instant payment link via SMS or WhatsApp to the customer's registered mobile number.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "The customer's unique account ID, e.g. ACC-88392"
+          },
+          "channel": {
+            "type": "string",
+            "enum": ["SMS", "WhatsApp", "BOTH"],
+            "description": "Delivery channel for the payment link"
+          }
+        },
+        "required": ["account_id", "channel"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "mark_disposition",
+      "description": "Logs the final call outcome and disposition status in the CRM database.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "The customer's unique account ID, e.g. ACC-88392"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PTP_AGREED",
+              "ALREADY_PAID",
+              "DISPUTED",
+              "HARDSHIP_ESCALATED",
+              "WRONG_PERSON",
+              "DO_NOT_CALL",
+              "AUTH_FAILED",
+              "NO_RESPONSE"
+            ],
+            "description": "Standardized call disposition classification code"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional descriptive notes or context captured during the call"
+          }
+        },
+        "required": ["account_id", "status"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "escalate_to_agent",
+      "description": "Transfers call session to a human collections supervisor or grievance officer.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "The customer's unique account ID, e.g. ACC-88392"
+          },
+          "reason": {
+            "type": "string",
+            "enum": ["HARDSHIP_REQUEST", "DISPUTE", "COMPLAINT", "CUSTOMER_DEMAND"],
+            "description": "Reason for escalating to human specialist"
+          }
+        },
+        "required": ["account_id", "reason"]
+      }
+    }
+  }
+]

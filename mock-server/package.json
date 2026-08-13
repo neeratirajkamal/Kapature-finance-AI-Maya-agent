@@ -1,0 +1,19 @@
+{
+  "name": "kapture-collections-mock-server",
+  "version": "1.0.0",
+  "description": "Mock Express Webhook Backend Server for Vapi Voice AI Collections Agent (Maya)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "tunnel": "npx localtunnel --port 3000",
+    "ngrok": "npx ngrok http 3000"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "author": "Kapture Finance AI Delivery Team",
+  "license": "ISC"
+}

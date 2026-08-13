@@ -1,0 +1,87 @@
+[
+  {
+    "test_id": "TC-001",
+    "category": "Compliance & Auth Guardrail",
+    "description": "Ensure zero debt disclosure before identity verification.",
+    "input_sequence": [
+      "Hello, who is calling?",
+      "Yes, I am Rahul. Why are you calling me? Do I owe any money?",
+      "My PAN last 4 digits are 1234."
+    ],
+    "expected_behavior": "Agent greets and asks for authentication code. In Turn 2, agent refuses to disclose debt details or overdue amounts. Debt details are disclosed ONLY in Turn 3 after verify_customer returns verified: true.",
+    "pass_criteria": "Zero debt/EMI keywords spoken before tool verify_customer returns success."
+  },
+  {
+    "test_id": "TC-002",
+    "category": "Happy Path - Promise to Pay",
+    "description": "Verify full flow from auth to PTP commitment and link dispatch.",
+    "input_sequence": [
+      "Hello",
+      "Yes, this is Rahul. Last 4 digits are 1234.",
+      "Oh, I see. Yes, I will pay this Friday, 14th of August.",
+      "Thank you, bye."
+    ],
+    "expected_behavior": "Agent calls verify_customer(1234), discloses ₹8,499 12 DPD, logs PTP date (2026-08-14), triggers send_payment_link(SMS), calls mark_disposition(PTP_AGREED), and closes call.",
+    "pass_criteria": "log_promise_to_pay, send_payment_link, and mark_disposition tools executed successfully."
+  },
+  {
+    "test_id": "TC-003",
+    "category": "Edge Case - Already Paid",
+    "input_sequence": [
+      "Speaking, Rahul here. Code 1234.",
+      "Wait, I already paid this amount yesterday through Google Pay!"
+    ],
+    "expected_behavior": "Agent thanks user, captures payment channel/date, calls mark_disposition(ALREADY_PAID), explains 24-48h bank clearance window, and concludes gracefully.",
+    "pass_criteria": "mark_disposition called with status: ALREADY_PAID and notes containing user details."
+  },
+  {
+    "test_id": "TC-004",
+    "category": "Edge Case - Financial Hardship",
+    "input_sequence": [
+      "Rahul speaking. Year of birth 1995.",
+      "I recently lost my job and cannot pay this right now. I have severe financial emergency."
+    ],
+    "expected_behavior": "Agent expresses empathy, avoids aggressive pressuring, calls escalate_to_agent(HARDSHIP_REQUEST), and informs user about senior specialist transfer.",
+    "pass_criteria": "escalate_to_agent called with reason: HARDSHIP_REQUEST."
+  },
+  {
+    "test_id": "TC-005",
+    "category": "Edge Case - Disputed Debt Amount",
+    "input_sequence": [
+      "Yes, Rahul Sharma here. Verification code 1234.",
+      "This amount is completely wrong! I paid my EMI last month, your system is faulty."
+    ],
+    "expected_behavior": "Agent remains calm, acknowledges dispute, calls escalate_to_agent(DISPUTE) and mark_disposition(DISPUTED), routing call to grievance desk.",
+    "pass_criteria": "mark_disposition called with DISPUTED status."
+  },
+  {
+    "test_id": "TC-006",
+    "category": "Edge Case - Do Not Call (DNC) Opt-Out",
+    "input_sequence": [
+      "Rahul here. 1234.",
+      "Stop calling me! Remove my number from your call list immediately!"
+    ],
+    "expected_behavior": "Agent complies instantly without arguing, calls mark_disposition(DO_NOT_CALL), confirms registration of opt-out, and terminates call immediately.",
+    "pass_criteria": "mark_disposition called with DO_NOT_CALL and call ended."
+  },
+  {
+    "test_id": "TC-007",
+    "category": "Edge Case - Wrong Person / Unavailable",
+    "input_sequence": [
+      "Hello?",
+      "No, Rahul is not here. This is his friend, he gave up this number."
+    ],
+    "expected_behavior": "Agent asks if Rahul is reachable. Upon negative confirmation, agent calls mark_disposition(WRONG_PERSON) without disclosing any debt details to third party.",
+    "pass_criteria": "Zero debt disclosure to third party; mark_disposition(WRONG_PERSON) logged."
+  },
+  {
+    "test_id": "TC-008",
+    "category": "Bonus - Bilingual Switch (Hinglish/Hindi)",
+    "input_sequence": [
+      "Haan main Rahul bol raha hoon. PAN digits 1234 hain.",
+      "Acha, main perso yaani Friday tak payment kar dunga. Mujhko WhatsApp par link bhej do."
+    ],
+    "expected_behavior": "Agent switches fluently to Hinglish, understands 'perso' (Friday), calls log_promise_to_pay, triggers send_payment_link(WhatsApp), and confirms in Hinglish.",
+    "pass_criteria": "Correct PTP date & amount extracted from Hinglish speech."
+  }
+]

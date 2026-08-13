@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapture Finance | Maya Voice AI Admin & Live Call Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-card: rgba(22, 31, 49, 0.7);
+      --bg-card-hover: rgba(30, 43, 67, 0.8);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.3);
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.1) 0%, transparent 40%);
+      background-attachment: fixed;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .title-group h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #ffffff, #9ca3af);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-group p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent-emerald);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1.2); }
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Card styling */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 24px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      letter-spacing: -0.01em;
+    }
+
+    .card-title .icon {
+      color: var(--accent-indigo);
+    }
+
+    /* Customer Info Box */
+    .customer-profile {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2));
+      border: 2px solid var(--accent-indigo);
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .customer-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .account-id {
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .info-label {
+      color: var(--text-muted);
+    }
+
+    .info-value {
+      font-weight: 600;
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .highlight-amount {
+      color: var(--accent-rose);
+    }
+
+    .highlight-dpd {
+      color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.15);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* Interactive Simulator */
+    .sim-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--accent-indigo);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-indigo), #4f46e5);
+      border: none;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Table Styling */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      padding: 12px 16px;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-ptp { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-paid { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+    .badge-hardship { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-dnc { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    /* Terminal Log Output */
+    .terminal-box {
+      background: #060911;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      height: 220px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .log-line {
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+
+    .log-time { color: var(--text-dim); }
+    .log-success { color: var(--accent-emerald); }
+    .log-warn { color: var(--accent-amber); }
+    .log-info { color: var(--accent-cyan); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-group">
+        <div class="logo-badge">M</div>
+        <div class="title-group">
+          <h1>Maya Voice AI | Collections Operational Dashboard</h1>
+          <p>Client: Kapture Finance &bull; Real-time Outbound Telephony & Webhook State Monitor</p>
+        </div>
+      </div>
+      <div class="status-pill">
+        <div class="pulse-dot"></div>
+        <span>Webhook Server Active (Port 3000)</span>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Left Sidebar: Customer Info & Interactive Trigger -->
+      <aside>
+        <div class="card">
+          <div class="customer-profile">
+            <div class="avatar">RJ</div>
+            <div class="customer-name">Raj</div>
+            <div class="account-id">ACC-88392</div>
+          </div>
+          <div class="info-list">
+            <div class="info-item">
+              <span class="info-label">Loan Product</span>
+              <span class="info-value">Personal Loan</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Overdue Amount</span>
+              <span class="info-value highlight-amount">₹8,499</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Days Past Due (DPD)</span>
+              <span class="info-value highlight-dpd">12 Days</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Auth Passcode</span>
+              <span class="info-value">1234 / 1995</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Phone</span>
+              <span class="info-value">+91 63035 51518</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Voice Call & Telephony Launcher Card -->
+        <div class="card" style="border-color: rgba(16, 185, 129, 0.4); background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(6, 182, 212, 0.08));">
+          <div class="card-title">
+            <span>Maya Voice Assistant Telephony & Call Flow</span>
+            <span class="icon">🎙️</span>
+          </div>
+          <div class="sim-buttons">
+            <button class="btn btn-primary" id="btnStartDemo" onclick="runFullDemoConversation()" style="background: linear-gradient(135deg, #6366f1, #06b6d4); font-size: 13px; padding: 12px;">
+              <span>▶ 1. Run PTP Call Flow (Happy Path)</span>
+              <span>⚡</span>
+            </button>
+            <button class="btn" id="btnEdgeCaseDemo" onclick="runEdgeCasesDemoConversation()" style="border-color: var(--accent-amber); background: rgba(245, 158, 11, 0.12); color: #fde047; font-size: 13px; font-weight: 600;">
+              <span>⚠️ 2. Run Edge Cases Call Flow (Paid / DNC / Dispute)</span>
+              <span>⚡</span>
+            </button>
+            <button class="btn" id="btnStartWebCall" onclick="startVapiWebCall()" style="border-color: var(--accent-emerald);">
+              <span>🎙️ Connect WebRTC Audio Stream (Vapi Web SDK)</span>
+              <span>➔</span>
+            </button>
+            <button class="btn" id="btnPhoneCall" onclick="triggerPhoneCall('+916303551518')" style="border-color: var(--accent-cyan);">
+              <span>📞 Dispatch PSTN Phone Call (+91 63035 51518)</span>
+              <span>➔</span>
+            </button>
+            <button class="btn" id="btnEndCall" onclick="stopVapiWebCall()" style="display: none; background: rgba(244, 63, 94, 0.2); border-color: var(--accent-rose); color: var(--accent-rose);">
+              <span>🔴 End Active Voice Call</span>
+              <span>✖</span>
+            </button>
+          </div>
+          <div id="callStatusIndicator" style="margin-top: 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-align: center;">
+            Status: Standby (Click button above to run interaction or connect live audio)
+          </div>
+          <!-- Audio Wave Visualizer Animation -->
+          <div id="audioWave" style="display: none; align-items: center; justify-content: center; gap: 4px; height: 24px; margin-top: 10px;">
+            <div style="width: 4px; height: 100%; background: #06b6d4; border-radius: 2px; animation: wave 0.8s infinite ease-in-out;"></div>
+            <div style="width: 4px; height: 60%; background: #6366f1; border-radius: 2px; animation: wave 0.8s infinite ease-in-out 0.2s;"></div>
+            <div style="width: 4px; height: 100%; background: #10b981; border-radius: 2px; animation: wave 0.8s infinite ease-in-out 0.4s;"></div>
+            <div style="width: 4px; height: 40%; background: #06b6d4; border-radius: 2px; animation: wave 0.8s infinite ease-in-out 0.1s;"></div>
+            <div style="width: 4px; height: 80%; background: #6366f1; border-radius: 2px; animation: wave 0.8s infinite ease-in-out 0.3s;"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Manual Tool Simulator</span>
+            <span class="icon">⚡</span>
+          </div>
+          <div class="sim-buttons">
+            <button class="btn" onclick="triggerTool('verify_customer', { account_id: 'ACC-88392', verification_code: '1234' })">
+              <span>1. Verify Identity (Pass)</span>
+              <span>➔</span>
+            </button>
+            <button class="btn" onclick="triggerTool('log_promise_to_pay', { account_id: 'ACC-88392', ptp_date: '2026-08-14', amount: 8499 })">
+              <span>2. Log PTP Commitment</span>
+              <span>➔</span>
+            </button>
+            <button class="btn" onclick="triggerTool('send_payment_link', { account_id: 'ACC-88392', channel: 'SMS' })">
+              <span>3. Dispatch SMS Link</span>
+              <span>➔</span>
+            </button>
+            <button class="btn" onclick="triggerTool('mark_disposition', { account_id: 'ACC-88392', status: 'PTP_AGREED', notes: 'Customer committed for Friday' })">
+              <span>4. Log Disposition (PTP)</span>
+              <span>➔</span>
+            </button>
+            <button class="btn" onclick="triggerTool('escalate_to_agent', { account_id: 'ACC-88392', reason: 'HARDSHIP_REQUEST' })">
+              <span>5. Escalate to Human</span>
+              <span>➔</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Main Panel: Activity Logs, PTP Records & Dispositions -->
+      <main>
+        <!-- Real-time Speech Transcript Bubble View -->
+        <div class="card">
+          <div class="card-title">
+            <span>Live Call Transcript & Voice Dialogue</span>
+            <span class="icon">💬</span>
+          </div>
+          <div id="transcriptBubbles" style="height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid var(--border-color);">
+            <div style="text-align: center; color: var(--text-dim); font-size: 13px; margin-auto: auto;">No active voice conversation transcript yet. Click "Run Interactive Voice Call" to initiate conversation.</div>
+          </div>
+        </div>
+
+        <!-- Activity Log Box -->
+        <div class="card">
+          <div class="card-title">
+            <span>Live Webhook Tool Execution Feed</span>
+            <span class="icon">📡</span>
+          </div>
+          <div class="terminal-box" id="terminalLog">
+            <div class="log-line"><span class="log-time">[00:00:00]</span> <span class="log-info">System initialized. Listening for Vapi tool-calls...</span></div>
+          </div>
+        </div>
+
+        <!-- Dispositions & Records Table -->
+        <div class="card">
+          <div class="card-title">
+            <span>Logged Call Dispositions & PTP Commitments</span>
+            <span class="icon">📋</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Account</th>
+                  <th>Status / Outcome</th>
+                  <th>Details / Notes</th>
+                </tr>
+              </thead>
+              <tbody id="dispositionTableBody">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: var(--text-dim);">No call dispositions logged yet. Trigger tools above to populate real-time state.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    async function fetchDBState() {
+      try {
+        const res = await fetch('/admin/db');
+        const data = await res.json();
+        renderTable(data);
+      } catch (err) {
+        console.error('Failed to fetch DB state:', err);
+      }
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('dispositionTableBody');
+      const dispositions = data.dispositions || [];
+      const ptpRecords = data.ptp_records || [];
+
+      if (dispositions.length === 0 && ptpRecords.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-dim);">No call dispositions logged yet. Trigger tools above to populate real-time state.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      dispositions.forEach(d => {
+        let badgeClass = 'badge-ptp';
+        if (d.status === 'ALREADY_PAID') badgeClass = 'badge-paid';
+        if (d.status === 'HARDSHIP_ESCALATED' || d.status === 'DISPUTED') badgeClass = 'badge-hardship';
+        if (d.status === 'DO_NOT_CALL') badgeClass = 'badge-dnc';
+
+        html += `
+          <tr>
+            <td style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">${new Date(d.timestamp).toLocaleTimeString()}</td>
+            <td style="font-family: 'JetBrains Mono', monospace;">${d.account_id}</td>
+            <td><span class="badge ${badgeClass}">${d.status}</span></td>
+            <td>${d.notes || '-'}</td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    async function triggerTool(toolName, args) {
+      const terminal = document.getElementById('terminalLog');
+      const timeStr = new Date().toLocaleTimeString();
+
+      terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span class="log-warn">Triggering tool '${toolName}'...</span></div>`;
+      terminal.scrollTop = terminal.scrollHeight;
+
+      const payload = {
+        message: {
+          type: 'tool-calls',
+          toolCalls: [
+            {
+              id: 'sim_call_' + Date.now(),
+              function: {
+                name: toolName,
+                arguments: args
+              }
+            }
+          ]
+        }
+      };
+
+      try {
+        const res = await fetch('/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const resultJson = await res.json();
+        
+        terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span class="log-success">HTTP 200 Response: ${JSON.stringify(resultJson)}</span></div>`;
+        terminal.scrollTop = terminal.scrollHeight;
+
+        fetchDBState();
+      } catch (err) {
+        terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span style="color: var(--accent-rose)">Error: ${err.message}</span></div>`;
+      }
+    }
+
+    // Vapi Web SDK Integration
+    let vapiInstance = null;
+    const VAPI_PUBLIC_KEY = '627514f3-d077-4903-aa06-9afef56edb60';
+    const ASSISTANT_ID = 'd171149c-73a3-4eef-aea7-d26157d9f7fe';
+
+    function getVapiConstructor() {
+      if (typeof window.Vapi === 'function') return window.Vapi;
+      if (typeof window.vapi === 'function') return window.vapi;
+      if (window.vapiSDK) {
+        if (typeof window.vapiSDK === 'function') return window.vapiSDK;
+        if (typeof window.vapiSDK.default === 'function') return window.vapiSDK.default;
+        if (typeof window.vapiSDK.Vapi === 'function') return window.vapiSDK.Vapi;
+      }
+      if (window.VapiSDK) {
+        if (typeof window.VapiSDK === 'function') return window.VapiSDK;
+        if (typeof window.VapiSDK.default === 'function') return window.VapiSDK.default;
+        if (typeof window.VapiSDK.Vapi === 'function') return window.VapiSDK.Vapi;
+      }
+      return null;
+    }
+
+    async function startVapiWebCall() {
+      const terminal = document.getElementById('terminalLog');
+      const statusIndicator = document.getElementById('callStatusIndicator');
+      const btnStart = document.getElementById('btnStartWebCall');
+      const btnEnd = document.getElementById('btnEndCall');
+      const timeStr = new Date().toLocaleTimeString();
+
+      terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span class="log-info">Connecting Web Voice Call to Maya...</span></div>`;
+      terminal.scrollTop = terminal.scrollHeight;
+      statusIndicator.innerText = 'Status: Connecting Audio Stream...';
+
+      try {
+        let VapiClass = window.Vapi;
+
+        if (typeof VapiClass !== 'function') {
+          // Dynamic ESM Module import (Rollup browser build)
+          const mod = await import('https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/+esm');
+          VapiClass = mod.default || mod.Vapi || mod;
+          while (VapiClass && typeof VapiClass !== 'function' && VapiClass.default) {
+            VapiClass = VapiClass.default;
+          }
+        }
+
+        if (typeof VapiClass !== 'function') {
+          throw new Error('Vapi Web SDK constructor not found on ESM module (got type: ' + typeof VapiClass + ').');
+        }
+
+        window.Vapi = VapiClass;
+        vapiInstance = new VapiClass(VAPI_PUBLIC_KEY);
+
+        vapiInstance.on('call-start', () => {
+          const tStr = new Date().toLocaleTimeString();
+          terminal.innerHTML += `<div class="log-line"><span class="log-time">[${tStr}]</span> <span class="log-success">🟢 Web Call Active! Maya is speaking on your audio device.</span></div>`;
+          terminal.scrollTop = terminal.scrollHeight;
+          statusIndicator.innerHTML = '<span style="color: var(--accent-emerald);">🟢 LIVE VOICE CALL ACTIVE (Maya is listening)</span>';
+          btnStart.style.display = 'none';
+          btnEnd.style.display = 'flex';
+        });
+
+        vapiInstance.on('call-end', () => {
+          const tStr = new Date().toLocaleTimeString();
+          terminal.innerHTML += `<div class="log-line"><span class="log-time">[${tStr}]</span> <span class="log-warn">🔴 Call Ended.</span></div>`;
+          terminal.scrollTop = terminal.scrollHeight;
+          statusIndicator.innerText = 'Status: Standby';
+          btnStart.style.display = 'flex';
+          btnEnd.style.display = 'none';
+          fetchDBState();
+        });
+
+        vapiInstance.on('message', (msg) => {
+          if (msg.type === 'transcript' && msg.transcript) {
+            const tStr = new Date().toLocaleTimeString();
+            const roleLabel = msg.transcriptType === 'final' ? (msg.role === 'assistant' ? 'Maya (Agent)' : 'Raj (User)') : 'Live STT';
+            terminal.innerHTML += `<div class="log-line"><span class="log-time">[${tStr}]</span> <strong>${roleLabel}:</strong> "${msg.transcript}"</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+          }
+          if (msg.type === 'tool-calls') {
+            fetchDBState();
+          }
+        });
+
+        vapiInstance.on('error', (err) => {
+          const tStr = new Date().toLocaleTimeString();
+          const errMsg = err ? (err.message || JSON.stringify(err)) : 'Unknown Vapi error';
+          terminal.innerHTML += `<div class="log-line"><span class="log-time">[${tStr}]</span> <span style="color: var(--accent-rose)">Vapi Error: ${errMsg}</span></div>`;
+          terminal.scrollTop = terminal.scrollHeight;
+          statusIndicator.innerHTML = `<span style="color: var(--accent-rose);">Call Error: ${errMsg}</span>`;
+        });
+
+        await vapiInstance.start(ASSISTANT_ID);
+      } catch (err) {
+        const errMsg = err.message || JSON.stringify(err);
+        terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span style="color: var(--accent-rose)">Error starting call: ${errMsg}</span></div>`;
+        terminal.scrollTop = terminal.scrollHeight;
+        statusIndicator.innerHTML = `<span style="color: var(--accent-rose);">Call Launch Failed: ${errMsg}</span>`;
+      }
+    }
+
+    function stopVapiWebCall() {
+      if (vapiInstance) {
+        vapiInstance.stop();
+      }
+    }
+
+    async function triggerPhoneCall(phone) {
+      const terminal = document.getElementById('terminalLog');
+      const timeStr = new Date().toLocaleTimeString();
+
+      terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span class="log-info">Dispatching phone call to ${phone}...</span></div>`;
+      terminal.scrollTop = terminal.scrollHeight;
+
+      try {
+        const res = await fetch('/api/call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: phone, name: 'Raj' })
+        });
+        const data = await res.json();
+
+        if (res.status === 200 || res.status === 201) {
+          terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span class="log-success">✅ Outbound call dispatched to ${phone}! Response: ${JSON.stringify(data)}</span></div>`;
+        } else {
+          terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span class="log-warn">⚠️ Response (${res.status}): ${JSON.stringify(data)}</span></div>`;
+        }
+        terminal.scrollTop = terminal.scrollHeight;
+      } catch (err) {
+        terminal.innerHTML += `<div class="log-line"><span class="log-time">[${timeStr}]</span> <span style="color: var(--accent-rose)">Error: ${err.message}</span></div>`;
+      }
+    }
+
+    function appendTranscript(role, text) {
+      const container = document.getElementById('transcriptBubbles');
+      if (container.children.length === 1 && container.children[0].innerText.includes('No active voice conversation')) {
+        container.innerHTML = '';
+      }
+      const isMaya = role === 'Maya (Agent)';
+      const align = isMaya ? 'flex-start' : 'flex-end';
+      const bg = isMaya ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(6, 182, 212, 0.25))' : 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.25))';
+      const border = isMaya ? 'var(--accent-indigo)' : 'var(--accent-emerald)';
+      const nameColor = isMaya ? 'var(--accent-cyan)' : 'var(--accent-emerald)';
+      
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.style.cssText = `align-self: ${align}; max-width: 80%; background: ${bg}; border: 1px solid ${border}; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-family: Inter, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.2); animation: fadeIn 0.3s ease;`;
+      div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+          <strong style="color: ${nameColor};">${role}</strong>
+          <span style="color: var(--text-dim); margin-left: 12px;">${time}</span>
+        </div>
+        <div style="color: #ffffff; line-height: 1.4;">${text}</div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+
+      // TTS audio out if supported
+      if ('speechSynthesis' in window && isMaya) {
+        try {
+          window.speechSynthesis.cancel();
+          const synth = new SpeechSynthesisUtterance(text);
+          synth.rate = 1.0;
+          synth.pitch = 1.0;
+          window.speechSynthesis.speak(synth);
+        } catch (e) {}
+      }
+    }
+
+    async function runFullDemoConversation() {
+      const statusIndicator = document.getElementById('callStatusIndicator');
+      const audioWave = document.getElementById('audioWave');
+      const btnDemo = document.getElementById('btnStartDemo');
+      const terminal = document.getElementById('terminalLog');
+      
+      btnDemo.disabled = true;
+      btnDemo.style.opacity = '0.6';
+      audioWave.style.display = 'flex';
+      
+      const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+      statusIndicator.innerHTML = '<span style="color: var(--accent-emerald);">🟢 LIVE VOICE CALL CONNECTED — Maya AI Voice Agent (Outbound)</span>';
+      
+      const tStart = new Date().toLocaleTimeString();
+      terminal.innerHTML += `<div class="log-line"><span class="log-time">[${tStart}]</span> <span class="log-info">Starting Maya Voice Collections Call Session...</span></div>`;
+      terminal.scrollTop = terminal.scrollHeight;
+
+      // Turn 1: Maya Greeting
+      appendTranscript('Maya (Agent)', 'Hello, this is Maya calling from Kapture Finance. Am I speaking with Mr. Raj?');
+      await delay(2500);
+
+      // Turn 2: Raj Response
+      appendTranscript('Raj (Customer)', 'Yes, speaking. Who is this again?');
+      await delay(2200);
+
+      // Turn 3: Identity Auth Request
+      appendTranscript('Maya (Agent)', 'Hello Raj! For account security purposes, could you please confirm the last 4 digits of your registered PAN card or birth year?');
+      await delay(3000);
+
+      // Turn 4: Raj Provides Verification Code
+      appendTranscript('Raj (Customer)', 'Sure, my PAN last 4 digits are 1234.');
+      await delay(2000);
+
+      // Trigger Webhook verify_customer
+      await triggerTool('verify_customer', { account_id: 'ACC-88392', verification_code: '1234' });
+      await delay(2000);
+
+      // Turn 5: Maya Overdue Statement & Request
+      appendTranscript('Maya (Agent)', 'Thank you for verifying, Raj. I see an overdue EMI of ₹8,499 for your Personal Loan which is 12 days past due. Can you make this payment today?');
+      await delay(3500);
+
+      // Turn 6: Raj Promises Payment for Friday
+      appendTranscript('Raj (Customer)', 'I am expecting my salary transfer by Friday. I will definitely pay this Friday, August 14th.');
+      await delay(2800);
+
+      // Trigger Webhook log_promise_to_pay & send_payment_link
+      await triggerTool('log_promise_to_pay', { account_id: 'ACC-88392', ptp_date: '2026-08-14', amount: 8499 });
+      await delay(1500);
+      await triggerTool('send_payment_link', { account_id: 'ACC-88392', channel: 'SMS' });
+      await delay(2000);
+
+      // Turn 7: Maya Confirmation & SMS Dispatch Notice
+      appendTranscript('Maya (Agent)', 'Perfect! I have logged your Promise-to-Pay for Friday, August 14th for ₹8,499 and sent a secure SMS payment link to your registered mobile number +91 63035 51518.');
+      await delay(3200);
+
+      // Trigger Webhook mark_disposition
+      await triggerTool('mark_disposition', { account_id: 'ACC-88392', status: 'PTP_AGREED', notes: 'Customer committed to pay ₹8,499 on Friday 14th Aug' });
+      await delay(1800);
+
+      // Turn 8: Maya Concludes Call
+      appendTranscript('Maya (Agent)', 'Thank you for your time, Raj. Please pay using the SMS link by Friday. Have a great day!');
+      await delay(2500);
+
+      audioWave.style.display = 'none';
+      statusIndicator.innerHTML = '<span style="color: var(--accent-cyan);">✅ CALL COMPLETED SUCCESSFULLY — Disposition Logged: PTP_AGREED</span>';
+      
+      const tEnd = new Date().toLocaleTimeString();
+      terminal.innerHTML += `<div class="log-line"><span class="log-time">[${tEnd}]</span> <span class="log-success">🏁 Call Session Completed. Disposition: PTP_AGREED logged into database.</span></div>`;
+      terminal.scrollTop = terminal.scrollHeight;
+
+      btnDemo.disabled = false;
+      btnDemo.style.opacity = '1';
+      fetchDBState();
+    }
+
+    async function runEdgeCasesDemoConversation() {
+      const statusIndicator = document.getElementById('callStatusIndicator');
+      const audioWave = document.getElementById('audioWave');
+      const btnEdge = document.getElementById('btnEdgeCaseDemo');
+      const terminal = document.getElementById('terminalLog');
+      const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+      btnEdge.disabled = true;
+      btnEdge.style.opacity = '0.6';
+      audioWave.style.display = 'flex';
+
+      statusIndicator.innerHTML = '<span style="color: var(--accent-amber);">⚠️ RUNNING EDGE CASE CONVERSATION SCENARIOS (Already Paid / DNC / Escalation)</span>';
+
+      // --- SCENARIO 1: ALREADY PAID ---
+      appendTranscript('Maya (Agent)', '[Edge Case 1: Already Paid] Hello Raj! I am calling regarding your overdue EMI of ₹8,499 for Personal Loan ACC-88392.');
+      await delay(2500);
+      appendTranscript('Raj (Customer)', 'I already paid yesterday via Google Pay UPI! Check your system!');
+      await delay(2200);
+      appendTranscript('Maya (Agent)', 'Thank you for informing me! I will log your payment report for verification right away.');
+      await delay(2000);
+      await triggerTool('mark_disposition', { account_id: 'ACC-88392', status: 'ALREADY_PAID', notes: 'Customer claims paid via UPI yesterday. Advised 24-48h processing.' });
+      await delay(2500);
+
+      // --- SCENARIO 2: DO NOT CALL (DNC) OPT-OUT ---
+      appendTranscript('Maya (Agent)', '[Edge Case 2: DNC Opt-Out] Hello, am I speaking with Mr. Raj?');
+      await delay(2200);
+      appendTranscript('Raj (Customer)', 'Stop calling me! Remove my phone number from your database immediately!');
+      await delay(2200);
+      appendTranscript('Maya (Agent)', 'Understood Raj. I sincerely apologize for the inconvenience. Registering your Do-Not-Call opt-out request now.');
+      await delay(2000);
+      await triggerTool('mark_disposition', { account_id: 'ACC-88392', status: 'DO_NOT_CALL', notes: 'RBI DNC Compliance: Customer requested opt-out during call.' });
+      await delay(2500);
+
+      // --- SCENARIO 3: HARDSHIP & HUMAN ESCALATION ---
+      appendTranscript('Maya (Agent)', '[Edge Case 3: Dispute & Hardship] For your account ACC-88392, can you clear the overdue balance today?');
+      await delay(2500);
+      appendTranscript('Raj (Customer)', 'I lost my job last month and cannot pay right now. I need to talk to a human manager about restructuring!');
+      await delay(2500);
+      appendTranscript('Maya (Agent)', 'I understand your situation, Raj. I am escalating your account to our Senior Grievance Specialist for hardship support.');
+      await delay(2000);
+      await triggerTool('escalate_to_agent', { account_id: 'ACC-88392', reason: 'HARDSHIP_REQUEST' });
+      await delay(1500);
+      await triggerTool('mark_disposition', { account_id: 'ACC-88392', status: 'HARDSHIP_ESCALATED', notes: 'Job loss reported. Escalated to Senior Collections Specialist.' });
+      await delay(2500);
+
+      audioWave.style.display = 'none';
+      statusIndicator.innerHTML = '<span style="color: var(--accent-emerald);">✅ EDGE CASES SIMULATION COMPLETED — All 3 Edge Cases Verified</span>';
+      
+      const tEnd = new Date().toLocaleTimeString();
+      terminal.innerHTML += `<div class="log-line"><span class="log-time">[${tEnd}]</span> <span class="log-success">🏁 Edge Cases Execution Finished. Dispositions ALREADY_PAID, DO_NOT_CALL, and HARDSHIP_ESCALATED logged.</span></div>`;
+      terminal.scrollTop = terminal.scrollHeight;
+
+      btnEdge.disabled = false;
+      btnEdge.style.opacity = '1';
+      fetchDBState();
+    }
+
+    // Auto-refresh state every 3 seconds
+    setInterval(fetchDBState, 3000);
+    fetchDBState();
+  </script>
+</body>
+</html>
